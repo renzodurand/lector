@@ -13,19 +13,17 @@
 <body>
 
 <h2>Lector de Códigos de Barras</h2>
-<div id="reader"></div>
-
+<div id="reader" style="width: 100%; max-width: 400px; height: 300px;"></div>
 <input type="number" id="cantidad" placeholder="Cantidad" min="1">
 <button onclick="enviar()">Enviar</button>
-
 <p id="mensaje"></p>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 <script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbz7g5UoOIP6zHIUWDL-nisU3MyoU7cj-A8p4lU2nLdX4M7dSjijMYoBvhFiBmsFBL6VEQ/exec"; // <- Reemplaza con tu URL /exec
-
+const webAppUrl = "TU_URL_DEL_WEBAPP"; // Reemplaza con tu WebApp
 let ultimoCodigo = "";
 
-// Inicializar el lector
+// Inicializa la cámara
 function onScanSuccess(decodedText, decodedResult) {
     ultimoCodigo = decodedText;
     document.getElementById("mensaje").innerText = "Código detectado: " + decodedText;
@@ -35,7 +33,7 @@ function onScanFailure(error) {
     // Ignorar errores menores
 }
 
-let html5QrcodeScanner = new Html5Qrcode("reader");
+const html5QrcodeScanner = new Html5Qrcode("reader");
 html5QrcodeScanner.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
@@ -45,20 +43,10 @@ html5QrcodeScanner.start(
 
 async function enviar() {
     const cantidad = Number(document.getElementById("cantidad").value);
-    if (!ultimoCodigo) {
-        alert("Escanea primero un código de barras.");
-        return;
-    }
-    if (!cantidad || cantidad <= 0) {
-        alert("Ingresa una cantidad válida.");
-        return;
-    }
+    if (!ultimoCodigo) { alert("Escanea primero un código."); return; }
+    if (!cantidad || cantidad <= 0) { alert("Ingresa cantidad válida."); return; }
 
-    const body = {
-        codigo: ultimoCodigo,
-        cantidad: cantidad
-        // Si quieres agregar nombre, proveedor, etc. puedes añadir aquí
-    };
+    const body = { codigo: ultimoCodigo, cantidad: cantidad };
 
     try {
         const res = await fetch(webAppUrl, {
@@ -71,11 +59,12 @@ async function enviar() {
         document.getElementById("mensaje").innerText = "Error al enviar: " + err;
     }
 
-    // Reiniciar cantidad para siguiente escaneo
     document.getElementById("cantidad").value = "";
     ultimoCodigo = "";
 }
 </script>
 
+
 </body>
 </html>
+
