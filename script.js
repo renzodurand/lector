@@ -79,24 +79,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // FUNCIONES
-  async function buscarYAgregar(codigo, cantidad) {
+   async function buscarYAgregar(codigo, cantidad) {
     if (!codigo) { alert("Ingrese o escanee un código"); return; }
     status.textContent = "Buscando producto...";
+  
     try {
-      // Consultamos al WebApp para obtener datos del producto
-      // NOTA: enviamos accion "buscar" y esperamos que tu Apps Script acepte esa petición y devuelva datos
-      const res = await fetch(WEBAPP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accion: "buscar", codigo })
-      });
+  
+      const res = await fetch(
+        `${WEBAPP_URL}?action=buscar&codigo=${encodeURIComponent(codigo)}`,
+        { method: "GET" }
+      );
+  
       const json = await res.json();
+  
       if (!json?.ok) {
         status.textContent = "Producto no encontrado: se puede añadir manualmente.";
-        // Agregar entrada local con datos básicos
         lista.push({ codigo, nombre: "(sin nombre)", cantidad, precio: 0, subtotal: 0 });
       } else {
-        // El WebApp debe devolver producto con precio y nombre
         const p = json.producto;
         const precio = Number(p.precio) || 0;
         const nombre = p.nombre || "(sin nombre)";
@@ -104,14 +103,17 @@ document.addEventListener("DOMContentLoaded", () => {
         lista.push({ codigo, nombre, cantidad, precio, subtotal });
         status.textContent = `Agregado: ${nombre} x${cantidad} - S/ ${subtotal.toFixed(2)}`;
       }
+  
       renderTabla();
       document.getElementById("codigo").value = "";
       document.getElementById("cantidad").value = 1;
       document.getElementById("codigo").focus();
+  
     } catch (err) {
       status.textContent = "Error al buscar producto: " + err;
     }
   }
+
 
   function renderTabla() {
     const tbody = document.querySelector("#tabla tbody");
