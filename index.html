@@ -1,70 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Lector de Códigos de Barras</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-  #reader { width: 100%; max-width: 400px; margin: auto; }
-  input, button { padding: 10px; margin: 5px; width: 80%; max-width: 300px; font-size: 16px; }
-</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>POS - Lector (Prueba)</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+<div id="login-screen" class="center">
+  <h2>Ingreso</h2>
+  <input id="user" placeholder="Usuario" autocomplete="username" />
+  <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" />
+  <button id="btnLogin">Entrar</button>
+  <p class="note">Login de prueba: user: <b>admin</b> pass: <b>1234</b></p>
+</div>
 
-<h2>Lector de Códigos de Barras</h2>
-<div id="reader" style="width: 100%; max-width: 400px; height: 300px;"></div>
-<input type="number" id="cantidad" placeholder="Cantidad" min="1">
-<button onclick="enviar()">Enviar</button>
-<p id="mensaje"></p>
+<div id="app" style="display:none;">
+  <header>
+    <h1>POS - Inventario</h1>
+    <button id="btnLogout">Cerrar sesión</button>
+  </header>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-<script>
-const webAppUrl = "TU_URL_DEL_WEBAPP"; // Reemplaza con tu WebApp
-let ultimoCodigo = "";
+  <section class="scanner">
+    <div>
+      <label>Código (simula lector o escribe y Enter)</label>
+      <input id="codigo" placeholder="Escanea o escribe el código y pulsa Enter" autofocus />
+    </div>
+    <div>
+      <label>Cantidad</label>
+      <input id="cantidad" type="number" min="1" value="1" />
+    </div>
+    <div class="row">
+      <button id="btnAgregar">Agregar a lista</button>
+      <button id="btnRegistrarEntrada">Registrar Entrada</button>
+      <button id="btnRegistrarSalida">Registrar Salida</button>
+    </div>
+    <p id="status" class="status"></p>
+  </section>
 
-// Inicializa la cámara
-function onScanSuccess(decodedText, decodedResult) {
-    ultimoCodigo = decodedText;
-    document.getElementById("mensaje").innerText = "Código detectado: " + decodedText;
-}
+  <section class="cart">
+    <h3>Lista</h3>
+    <table id="tabla">
+      <thead>
+        <tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="total">TOTAL: S/ <span id="total">0.00</span></div>
+  </section>
+</div>
 
-function onScanFailure(error) {
-    // Ignorar errores menores
-}
-
-const html5QrcodeScanner = new Html5Qrcode("reader");
-html5QrcodeScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    onScanSuccess,
-    onScanFailure
-);
-
-async function enviar() {
-    const cantidad = Number(document.getElementById("cantidad").value);
-    if (!ultimoCodigo) { alert("Escanea primero un código."); return; }
-    if (!cantidad || cantidad <= 0) { alert("Ingresa cantidad válida."); return; }
-
-    const body = { codigo: ultimoCodigo, cantidad: cantidad };
-
-    try {
-        const res = await fetch(webAppUrl, {
-            method: "POST",
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        document.getElementById("mensaje").innerText = data.mensaje || data.error;
-    } catch (err) {
-        document.getElementById("mensaje").innerText = "Error al enviar: " + err;
-    }
-
-    document.getElementById("cantidad").value = "";
-    ultimoCodigo = "";
-}
-</script>
-
-
+<script src="script.js"></script>
 </body>
 </html>
-
