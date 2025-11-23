@@ -79,40 +79,38 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // FUNCIONES
-   async function buscarYAgregar(codigo, cantidad) {
-    if (!codigo) { alert("Ingrese o escanee un código"); return; }
-    status.textContent = "Buscando producto...";
+  async function buscarYAgregar(codigo, cantidad) {
+    status.textContent = "Buscando...";
   
-    try {
+    return new Promise((resolve) => {
+      const callbackName = "cb_" + Date.now();
   
-      const res = await fetch(
-        `${WEBAPP_URL}?action=buscar&codigo=${encodeURIComponent(codigo)}`,
-        { method: "GET" }
-      );
+      window[callbackName] = function(json) {
+        delete window[callbackName];
   
-      const json = await res.json();
+        if (!json.ok) {
+          status.textContent = "Producto no encontrado.";
+          lista.push({ codigo, nombre:"(sin nombre)", cantidad, precio:0, subtotal:0 });
+        } else {
+          const p = json.producto;
+          const precio = Number(p.precio) || 0;
+          const nombre = p.nombre;
+          const subtotal = Number((precio * cantidad).toFixed(2));
   
-      if (!json?.ok) {
-        status.textContent = "Producto no encontrado: se puede añadir manualmente.";
-        lista.push({ codigo, nombre: "(sin nombre)", cantidad, precio: 0, subtotal: 0 });
-      } else {
-        const p = json.producto;
-        const precio = Number(p.precio) || 0;
-        const nombre = p.nombre || "(sin nombre)";
-        const subtotal = Number((precio * cantidad).toFixed(2));
-        lista.push({ codigo, nombre, cantidad, precio, subtotal });
-        status.textContent = `Agregado: ${nombre} x${cantidad} - S/ ${subtotal.toFixed(2)}`;
-      }
+          lista.push({ codigo, nombre, cantidad, precio, subtotal });
+          status.textContent = `Agregado: ${nombre}`;
+        }
   
-      renderTabla();
-      document.getElementById("codigo").value = "";
-      document.getElementById("cantidad").value = 1;
-      document.getElementById("codigo").focus();
+        renderTabla();
+        resolve();
+      };
   
-    } catch (err) {
-      status.textContent = "Error al buscar producto: " + err;
-    }
+      const s = document.createElement("script");
+      s.src = `${WEBAPP_URL}?accion=buscar&codigo=${codigo}&callback=${callbackName}`;
+      document.body.appendChild(s);
+    });
   }
+
 
 
   function renderTabla() {
@@ -133,34 +131,30 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("total").textContent = total.toFixed(2);
   }
 
-  async function registrarOperacion(tipo) {
-    if (lista.length === 0) { alert("La lista está vacía"); return; }
+    async function registrarOperacion(tipo) {
+    if (lista.length === 0) return;
+  
     status.textContent = "Registrando...";
-    try {
-      // Enviamos cada item al WebApp (puedes optimizar enviando todo en un sólo POST)
-      for (const it of lista) {
-        const body = {
-          accion: tipo === "entrada" ? "entrada" : "salida",
-          codigo: it.codigo,
-          cantidad: it.cantidad
+  
+    for (const it of lista) {
+      await new Promise((resolve) => {
+        const cb = "cb_" + Math.random().toString(36).slice(2);
+  
+        window[cb] = function(json) {
+          delete window[cb];
+          resolve(json);
         };
-        const r = await fetch(WEBAPP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-        const json = await r.json();
-        if (!json.ok) {
-          status.textContent = `Error en ${it.codigo}: ${json.mensaje || json.error}`;
-          return;
-        }
-      }
-      status.textContent = "Operación registrada correctamente";
-      lista = [];
-      renderTabla();
-    } catch (err) {
-      status.textContent = "Error al registrar: " + err;
+  
+        const s = document.createElement("script");
+        s.src = `${WEBAPP_URL}?accion=${tipo}&codigo=${it.codigo}&cantidad=${it.cantidad}&callback=${cb}`;
+        document.body.appendChild(s);
+      });
     }
+  
+    status.textContent = "Operación completada";
+    lista = [];
+    renderTabla();
   }
+
 
 });
