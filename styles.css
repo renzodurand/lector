@@ -1,0 +1,16 @@
+:root{font-family:Inter, Arial, sans-serif;color:#222}
+body{margin:0;padding:16px;background:#f6f7fb}
+.center{max-width:360px;margin:60px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+header h1{font-size:18px;margin:0}
+.scanner{max-width:760px;background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.04);margin-bottom:12px}
+.scanner input{width:100%;padding:8px;margin:6px 0;border:1px solid #ddd;border-radius:6px}
+.row{display:flex;gap:8px}
+.row button{flex:1;padding:8px}
+button{cursor:pointer}
+.cart{max-width:760px}
+table{width:100%;border-collapse:collapse;background:#fff}
+table th, table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.total{margin-top:8px;font-weight:700;font-size:18px}
+.status{margin-top:8px;color:#2b7a2b}
+.note{font-size:12px;color:#666;margin-top:8px}
